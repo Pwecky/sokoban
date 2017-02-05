@@ -70,7 +70,48 @@ def heur_alternate(state):
     #heur_manhattan_distance has flaws.   
     #Write a heuristic function that improves upon heur_manhattan_distance to estimate distance between the current state and the goal.
     #Your function should return a numeric value for the estimate of the distance to the goal.
-    return 0
+    #This heuristic function will calculate the cost based on the manhattan_distance but will consider obstacles and each space will be assigned to only one box.
+    count = 0
+    for box in state.boxes:
+        min_dist = float('inf')
+        min_dist_store = None
+
+        if state.restrictions is None:
+            #check if box is in a viable storage location already (min_dist = 0)
+            if box in state.storage:
+                continue
+
+            for store in state.storage:
+                dist = abs(box[0]-store[0]) + abs(box[1]-store[1])
+                if dist < min_dist:
+                    min_dist = dist
+                    min_dist_store = store
+
+        else:
+            index = state.boxes[box]
+
+            #check if box is in a viable storage location already (min_dist = 0)
+            if box in state.restrictions[index]:
+                continue
+
+            for store in state.restrictions[index]:
+                dist = abs(box[0]-store[0]) + abs(box[1]-store[1])
+                if dist < min_dist:
+                    min_dist = dist
+                    min_dist_store = store
+
+        #add 1 to count for each obstacle in the way of the manhattan path
+        for obstacle in state.obstacles:
+            if obstacle[0] == box[0] or obstacle[0] == min_dist_store[0]:
+                if (obstacle[1] < box[1]) == (obstacle[1] > min_dist_store[1]):
+                    count += 2
+
+            elif obstacle[1] == box[1] or obstacle[1] == min_dist_store[1]:
+                if (obstacle[0] < box[0]) == (obstacle[0] > min_dist_store[0]):
+                    count += 2
+
+        count += min_dist
+    return count
 
 def fval_function(sN, weight):
     #IMPLEMENT
