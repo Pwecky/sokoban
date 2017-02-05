@@ -1,6 +1,7 @@
 
 # import student's functions
 from solution import *
+from test_problems import PROBLEMS
 
 #Select what to test
 print_problems = True
@@ -34,7 +35,7 @@ if test_alternate:
       unsolved.append(i)
 
   print("\n*************************************")
-  print("Of 10 initial problems, {} were solved in less than {} seconds by this solver.".format(solved, timebound))
+  print("Of 40 problems, {} were solved in less than {} seconds by this solver.".format(solved, timebound))
   print("Problems that remain unsolved in the set are Problems: {}".format(unsolved))
   print("The benchmark implementation solved 14 out of the 40 practice problems given 4 seconds.")
   print("*************************************\n")

@@ -3,10 +3,10 @@
 from solution import *
 
 #Select what to test
-test_manhattan = True
-test_anytime_gbfs = True
+test_manhattan = False
+test_anytime_gbfs = False
 test_anytime_weighted_astar = True
-test_fval_function = True
+test_fval_function = False
 
 if test_manhattan:
     ##############################################################

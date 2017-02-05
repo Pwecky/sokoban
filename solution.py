@@ -89,7 +89,7 @@ def fval_function(sN, weight):
     #The function must return a numeric f-value.
     #The value will determine your state's position on the Frontier list during a 'custom' search.
     #You must initialize your search engine object as a 'custom' search engine if you supply a custom fval function.
-    return 0
+    return sN.gval + weight*sN.hval
 
 def anytime_gbfs(initial_state, heur_fn, timebound = 10):
     #IMPLEMENT
@@ -104,7 +104,7 @@ def anytime_gbfs(initial_state, heur_fn, timebound = 10):
     final = False
 
     #costbound is of the form: (g_bound,h_bound,g_plus_h_bound), initially set to infinity
-    costbound = (float('inf'),float('inf'),float('inf'))
+    costbound = (float('inf'), float('inf'), float('inf'))
     time_remaining = timebound
     saved_time = os.times()[0]
 
@@ -127,8 +127,36 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound = 10):
     #IMPLEMENT
     '''Provides an implementation of anytime weighted a-star, as described in the HW1 handout'''
     '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
-    '''OUTPUT: A goal state (if a goal is found), else False''' 
-    return False
+    '''OUTPUT: A goal state (if a goal is found), else False'''
+    #wrap fval function
+    wrapped_fval_function = (lambda sN: fval_function(sN, weight))
+
+    #initialize search engine
+    se = SearchEngine('custom', 'full')
+    se.init_search(initial_state, goal_fn=sokoban_goal_state, heur_fn=heur_fn, fval_function=wrapped_fval_function)
+
+    #final stores the final result
+    final = False
+
+    #costbound is of the form: (g_bound,h_bound,g_plus_h_bound), initially set to infinity
+    costbound = (float('inf'), float('inf'), float('inf'))
+    time_remaining = timebound
+    saved_time = os.times()[0]
+
+    while time_remaining > 0:
+        #result is SokobanState object
+        result = se.search(time_remaining, costbound)
+
+        if result:
+            time_remaining -= (os.times()[0] - saved_time)
+            saved_time = os.times()[0]
+            #g_bound + h_bound is result's gval
+            costbound = (float('inf'), float('inf'), result.gval)
+            final = result
+        else:
+            return final
+
+    return final
 
 if __name__ == "__main__":
   #TEST CODE
