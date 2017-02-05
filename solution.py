@@ -70,7 +70,8 @@ def heur_alternate(state):
     #heur_manhattan_distance has flaws.   
     #Write a heuristic function that improves upon heur_manhattan_distance to estimate distance between the current state and the goal.
     #Your function should return a numeric value for the estimate of the distance to the goal.
-    #This heuristic function will calculate the cost based on the manhattan_distance but will consider obstacles and each space will be assigned to only one box.
+    #This heuristic function will calculate the cost based on the manhattan_distance but will consider obstacles and
+    #each space will be assigned to only one box.
     count = 0
     for box in state.boxes:
         min_dist = float('inf')
