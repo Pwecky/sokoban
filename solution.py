@@ -23,7 +23,7 @@ def heur_displaced(state):
   return count
 
 def heur_manhattan_distance(state):
-#IMPLEMENT
+    #IMPLEMENT
     '''admissible sokoban heuristic: manhattan distance'''
     '''INPUT: a sokoban state'''
     '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''      
@@ -63,7 +63,7 @@ def heur_manhattan_distance(state):
     return count
 
 def heur_alternate(state):
-#IMPLEMENT
+    #IMPLEMENT
     '''a better sokoban heuristic'''
     '''INPUT: a sokoban state'''
     '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''        
@@ -73,7 +73,7 @@ def heur_alternate(state):
     return 0
 
 def fval_function(sN, weight):
-#IMPLEMENT
+    #IMPLEMENT
     """
     Provide a custom formula for f-value computation for Anytime Weighted A star.
     Returns the fval of the state contained in the sNode.
@@ -92,14 +92,39 @@ def fval_function(sN, weight):
     return 0
 
 def anytime_gbfs(initial_state, heur_fn, timebound = 10):
-#IMPLEMENT
+    #IMPLEMENT
     '''Provides an implementation of anytime greedy best-first search, as described in the HW1 handout'''
     '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
-    '''OUTPUT: A goal state (if a goal is found), else False''' 
-    return False
+    '''OUTPUT: A goal state (if a goal is found), else False'''
+    #initialize search engine
+    se = SearchEngine('best_first', 'full')
+    se.init_search(initial_state, goal_fn=sokoban_goal_state, heur_fn=heur_fn)
+
+    #final stores the final result
+    final = False
+
+    #costbound is of the form: (g_bound,h_bound,g_plus_h_bound), initially set to infinity
+    costbound = (float('inf'),float('inf'),float('inf'))
+    time_remaining = timebound
+    saved_time = os.times()[0]
+
+    while time_remaining > 0:
+        #result is SokobanState object
+        result = se.search(time_remaining, costbound)
+
+        if result:
+            time_remaining -= (os.times()[0] - saved_time)
+            saved_time = os.times()[0]
+            #g_bound is result's gval
+            costbound = (result.gval, float('inf'), float('inf'))
+            final = result
+        else:
+            return final
+
+    return final
 
 def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound = 10):
-#IMPLEMENT
+    #IMPLEMENT
     '''Provides an implementation of anytime weighted a-star, as described in the HW1 handout'''
     '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False''' 
