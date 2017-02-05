@@ -33,7 +33,34 @@ def heur_manhattan_distance(state):
     #When calculating distances, assume there are no obstacles on the grid and that several boxes can fit in one storage bin.
     #You should implement this heuristic function exactly, even if it is tempting to improve it.
     #Your function should return a numeric value; this is the estimate of the distance to the goal.
-    return 0
+    count = 0
+    for box in state.boxes:
+        min_dist = float('inf')
+
+        if state.restrictions is None:
+            #check if box is in a viable storage location already (min_dist = 0)
+            if box in state.storage:
+                continue
+
+            for store in state.storage:
+                dist = abs(box[0]-store[0]) + abs(box[1]-store[1])
+                if dist < min_dist:
+                    min_dist = dist
+
+        else:
+            index = state.boxes[box]
+
+            #check if box is in a viable storage location already (min_dist = 0)
+            if box in state.restrictions[index]:
+                continue
+
+            for store in state.restrictions[index]:
+                dist = abs(box[0]-store[0]) + abs(box[1]-store[1])
+                if dist < min_dist:
+                    min_dist = dist
+
+        count += min_dist
+    return count
 
 def heur_alternate(state):
 #IMPLEMENT
@@ -92,7 +119,7 @@ if __name__ == "__main__":
     s0 = PROBLEMS[i] #Problems will get harder as i gets bigger
 
     se = SearchEngine('astar', 'full')
-    se.init_search(s0, goal_fn=sokoban_goal_state, heur_fn=heur_displaced)
+    se.init_search(s0, goal_fn=sokoban_goal_state, heur_fn=heur_manhattan_distance)
     final = se.search(timebound)
 
     if final:
