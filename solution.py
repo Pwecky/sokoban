@@ -161,8 +161,6 @@ def heur_alternate(state):
 
             for store in state.storage:
                 dist = (abs(state.robot[0]-box[0]) + abs(state.robot[1]-box[1])) + (abs(box[0]-store[0]) + abs(box[1]-store[1]))
-                #partial deadlock detection
-                #dist += 1.5*(o_r + o_d + o_u + o_l + w_r + w_d + w_u + w_l + 1)**(b_r + b_l) + (o_r + o_d + o_u + o_l + w_r + w_d + w_u + w_l + 1)**(b_d + b_u)
                 dist += (b_r + b_d + b_u + b_l) + (o_r + o_d + o_u + o_l) + (w_r + w_d + w_u + w_l)
                 if dist < min_dist:
                     min_dist = dist
@@ -252,8 +250,6 @@ def heur_alternate(state):
 
             for store in state.restrictions[index]:
                 dist = (abs(state.robot[0]-box[0]) + abs(state.robot[1]-box[1])) + (abs(box[0]-store[0]) + abs(box[1]-store[1]))
-                #partial deadlock detection
-                #dist += 1.5*(o_r + o_d + o_u + o_l + w_r + w_d + w_u + w_l + 1)**(b_r + b_l) + (o_r + o_d + o_u + o_l + w_r + w_d + w_u + w_l + 1)**(b_d + b_u)
                 dist += (b_r + b_d + b_u + b_l) + (o_r + o_d + o_u + o_l) + (w_r + w_d + w_u + w_l)
                 if dist < min_dist:
                     min_dist = dist
@@ -362,7 +358,7 @@ if __name__ == "__main__":
     s0 = PROBLEMS[i] #Problems will get harder as i gets bigger
 
     se = SearchEngine('astar', 'full')
-    se.init_search(s0, goal_fn=sokoban_goal_state, heur_fn=heur_manhattan_distance)
+    se.init_search(s0, goal_fn=sokoban_goal_state, heur_fn=heur_displaced)
     final = se.search(timebound)
 
     if final:

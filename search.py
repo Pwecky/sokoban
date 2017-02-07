@@ -503,4 +503,3 @@ class SearchEngine:
 
         #end of while--OPEN is empty and no solution
         return False
-            
