@@ -34,10 +34,10 @@ def heur_manhattan_distance(state):
     #You should implement this heuristic function exactly, even if it is tempting to improve it.
     #Your function should return a numeric value; this is the estimate of the distance to the goal.
     count = 0
-    for box in state.boxes:
-        min_dist = float('inf')
+    if state.restrictions is None:
+        for box in state.boxes:
+            min_dist = float('inf')
 
-        if state.restrictions is None:
             #check if box is in a viable storage location already (min_dist = 0)
             if box in state.storage:
                 continue
@@ -47,7 +47,11 @@ def heur_manhattan_distance(state):
                 if dist < min_dist:
                     min_dist = dist
 
-        else:
+            count += min_dist
+
+    else:
+        for box in state.boxes:
+            min_dist = float('inf')
             index = state.boxes[box]
 
             #check if box is in a viable storage location already (min_dist = 0)
@@ -59,59 +63,203 @@ def heur_manhattan_distance(state):
                 if dist < min_dist:
                     min_dist = dist
 
-        count += min_dist
+            count += min_dist
+
     return count
 
 def heur_alternate(state):
     #IMPLEMENT
     '''a better sokoban heuristic'''
     '''INPUT: a sokoban state'''
-    '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''        
-    #heur_manhattan_distance has flaws.   
+    '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''
+    #heur_manhattan_distance has flaws.
     #Write a heuristic function that improves upon heur_manhattan_distance to estimate distance between the current state and the goal.
     #Your function should return a numeric value for the estimate of the distance to the goal.
-    #This heuristic function will calculate the cost based on the manhattan_distance but will consider obstacles and
-    #each space will be assigned to only one box.
+    #This heuristic function will calculate the cost based on the manhattan_distance but will consider deadlock states
+    #and the location of the robot.
     count = 0
-    for box in state.boxes:
-        min_dist = float('inf')
-        min_dist_store = None
 
-        if state.restrictions is None:
+    if state.restrictions is None:
+        for box in state.boxes:
+            min_dist = float('inf')
+
             #check if box is in a viable storage location already (min_dist = 0)
             if box in state.storage:
                 continue
 
+            #obstacles
+            o_r = ((box[0]+1, box[1]) in state.obstacles)
+            o_d = ((box[0], box[1]-1) in state.obstacles)
+            o_u = ((box[0], box[1]+1) in state.obstacles)
+            o_l = ((box[0]-1, box[1]) in state.obstacles)
+
+            #walls
+            w_r = (box[0]+1 == state.width)
+            w_d = (box[1]-1 == -1)
+            w_u = (box[1]+1 == state.height)
+            w_l = (box[0]-1 == -1)
+
+            #deadlock detection: boxes at corners of obstacles and walls
+            if (o_r or w_r) and (o_d or w_d):
+                count = float('inf')
+                break
+            elif (o_r or w_r) and (o_u or w_u):
+                count = float('inf')
+                break
+            elif (o_l or w_l) and (o_u or w_u):
+                count = float('inf')
+                break
+            elif (o_l or w_l) and (o_d or w_d):
+                count = float('inf')
+                break
+
+            on_right = False
+            on_left = False
+            on_top = False
+            on_bottom = False
+
             for store in state.storage:
-                dist = abs(box[0]-store[0]) + abs(box[1]-store[1])
+                if store[0] == state.width-1:
+                    on_right = True
+
+                elif store[0] == 0:
+                    on_left = True
+
+                elif store[1] == 0:
+                    on_bottom = True
+
+                elif store[1] == state.height-1:
+                    on_top = True
+
+            #deadlock detection: boxes against a wall with no storage along the wall
+            if not on_right and w_r:
+                count = float('inf')
+                break
+            elif not on_left and w_l:
+                count = float('inf')
+                break
+            elif not on_bottom and w_d:
+                count = float('inf')
+                break
+            elif not on_top and w_u:
+                count = float('inf')
+                break
+
+            #boxes
+            b_r = ((box[0]+1, box[1]) in state.boxes)
+            b_d = ((box[0], box[1]-1) in state.boxes)
+            b_u = ((box[0], box[1]+1) in state.boxes)
+            b_l = ((box[0]-1, box[1]) in state.boxes)
+
+            #deadlock detection: two consecutive boxes against a wall
+            if (b_d or b_u) and (w_r or w_l):
+                count = float('inf')
+                break
+            elif (b_r or b_l) and (w_d or w_u):
+                count = float('inf')
+                break
+
+            for store in state.storage:
+                dist = (abs(state.robot[0]-box[0]) + abs(state.robot[1]-box[1])) + (abs(box[0]-store[0]) + abs(box[1]-store[1]))
+                #partial deadlock detection
+                #dist += 1.5*(o_r + o_d + o_u + o_l + w_r + w_d + w_u + w_l + 1)**(b_r + b_l) + (o_r + o_d + o_u + o_l + w_r + w_d + w_u + w_l + 1)**(b_d + b_u)
+                dist += (b_r + b_d + b_u + b_l) + (o_r + o_d + o_u + o_l) + (w_r + w_d + w_u + w_l)
                 if dist < min_dist:
                     min_dist = dist
-                    min_dist_store = store
 
-        else:
+            count += min_dist
+
+    else:
+        for box in state.boxes:
+            min_dist = float('inf')
             index = state.boxes[box]
 
             #check if box is in a viable storage location already (min_dist = 0)
             if box in state.restrictions[index]:
                 continue
 
+            #obstacles
+            o_r = ((box[0]+1, box[1]) in state.obstacles)
+            o_d = ((box[0], box[1]-1) in state.obstacles)
+            o_u = ((box[0], box[1]+1) in state.obstacles)
+            o_l = ((box[0]-1, box[1]) in state.obstacles)
+
+            #walls
+            w_r = (box[0]+1 == state.width)
+            w_d = (box[1]-1 == -1)
+            w_u = (box[1]+1 == state.height)
+            w_l = (box[0]-1 == -1)
+
+            #deadlock detection: boxes at corners of obstacles and walls
+            if (o_r or w_r) and (o_d or w_d):
+                count = float('inf')
+                break
+            elif (o_r or w_r) and (o_u or w_u):
+                count = float('inf')
+                break
+            elif (o_l or w_l) and (o_u or w_u):
+                count = float('inf')
+                break
+            elif (o_l or w_l) and (o_d or w_d):
+                count = float('inf')
+                break
+
+            on_right = False
+            on_left = False
+            on_top = False
+            on_bottom = False
+
             for store in state.restrictions[index]:
-                dist = abs(box[0]-store[0]) + abs(box[1]-store[1])
+                if store[0] == state.width-1:
+                    on_right = True
+
+                elif store[0] == 0:
+                    on_left = True
+
+                elif store[1] == 0:
+                    on_bottom = True
+
+                elif store[1] == state.height-1:
+                    on_top = True
+
+            #deadlock detection: boxes against a wall with no storage along the wall
+            if not on_right and w_r:
+                count = float('inf')
+                break
+            elif not on_left and w_l:
+                count = float('inf')
+                break
+            elif not on_bottom and w_d:
+                count = float('inf')
+                break
+            elif not on_top and w_u:
+                count = float('inf')
+                break
+
+            #boxes
+            b_r = ((box[0]+1, box[1]) in state.boxes)
+            b_d = ((box[0], box[1]-1) in state.boxes)
+            b_u = ((box[0], box[1]+1) in state.boxes)
+            b_l = ((box[0]-1, box[1]) in state.boxes)
+
+            #deadlock detection: two consecutive boxes against a wall
+            if (b_d or b_u) and (w_r or w_l):
+                count = float('inf')
+                break
+            elif (b_r or b_l) and (w_d or w_u):
+                count = float('inf')
+                break
+
+            for store in state.restrictions[index]:
+                dist = (abs(state.robot[0]-box[0]) + abs(state.robot[1]-box[1])) + (abs(box[0]-store[0]) + abs(box[1]-store[1]))
+                #partial deadlock detection
+                #dist += 1.5*(o_r + o_d + o_u + o_l + w_r + w_d + w_u + w_l + 1)**(b_r + b_l) + (o_r + o_d + o_u + o_l + w_r + w_d + w_u + w_l + 1)**(b_d + b_u)
+                dist += (b_r + b_d + b_u + b_l) + (o_r + o_d + o_u + o_l) + (w_r + w_d + w_u + w_l)
                 if dist < min_dist:
                     min_dist = dist
-                    min_dist_store = store
 
-        #add 1 to count for each obstacle in the way of the manhattan path
-        for obstacle in state.obstacles:
-            if obstacle[0] == box[0] or obstacle[0] == min_dist_store[0]:
-                if (obstacle[1] < box[1]) == (obstacle[1] > min_dist_store[1]):
-                    count += 2
+            count += min_dist
 
-            elif obstacle[1] == box[1] or obstacle[1] == min_dist_store[1]:
-                if (obstacle[0] < box[0]) == (obstacle[0] > min_dist_store[0]):
-                    count += 2
-
-        count += min_dist
     return count
 
 def fval_function(sN, weight):
