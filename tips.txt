@@ -1,9 +1,17 @@
-1.
+1. Play the sokoban game first. You should find some of the test problem games and actually play them to get a feel
+for how the game works.
 
-2.
+2. Think about how to improve the Manhattan distance heuristic, i.e., how can we get a more accurate measurement of
+cost. This may include factoring in obstacles, the robot's location, walls, etc.
 
-3.
+3. Some moves will result in deadlock, where the player will be unable to get a solution no matter what. Translated to
+your algorithm, this means nodes will be expanded even when there is no solution down the path of expansion; you should
+find a way to check for this to avoid unnecessary expansions.
 
-4.
+4. Think about the efficiency of your code; given the timebound constraint, a lot of checks, comparisons, etc. will be
+quite costly. Check for ways to store reused comparisons, reduce unnecessary operations by adjusting the scope of loops,
+etc.
 
-5.
+5. Cater the code to the generalized game and not a set of test problems; this ensures your code is robust enough to
+handle general problems. Catered solutions may be effective for one set of problems but on the grand scheme, they may
+perform poorly compared to a generalized heuristic.
