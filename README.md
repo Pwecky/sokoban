@@ -1,2 +1,2 @@
 # sokoban
-Artificial intelligence used to search Sokoban solutions.
+Artificial intelligence applied towards searching Sokoban solutions.
